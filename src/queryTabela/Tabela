@@ -1,0 +1,91 @@
+-- Remoção de sequences, triggers e tabelas existentes, se necessário
+DROP SEQUENCE produto_sequence;
+DROP SEQUENCE categoria_sequence;
+DROP SEQUENCE marca_sequence;
+DROP TRIGGER tr_insert_id_produto;
+DROP TRIGGER tr_insert_id_categoria;
+DROP TRIGGER tr_insert_id_marca;
+DROP TABLE PRODUTO;
+DROP TABLE CATEGORIA;
+DROP TABLE Marca;
+
+-- Criação da tabela CATEGORIA
+CREATE TABLE CATEGORIA (
+  idCategoria integer PRIMARY KEY NOT NULL,
+  nome VARCHAR2(45) NOT NULL,
+  descricao VARCHAR2(255)NOT NULL
+);
+
+-- Criação da tabela Marca
+CREATE TABLE Marca (
+    idMarca integer PRIMARY KEY NOT NULL,
+    nome VARCHAR2(100) NOT NULL,
+    descricao VARCHAR2(255) NOT NULL
+);
+
+-- Criação da tabela PRODUTO com relacionamentos para CATEGORIA e Marca
+CREATE TABLE PRODUTO (
+  idProduto INTEGER PRIMARY KEY NOT NULL,
+  nome VARCHAR2(45) NOT NULL,
+  descricao VARCHAR2(200) NOT NULL,
+  preco NUMBER NOT NULL,
+  idCategoria integer NOT NULL,
+  idMarca integer NOT NULL,
+  CONSTRAINT FK_CATEGORIA_PRODUTO FOREIGN KEY (idCategoria) REFERENCES CATEGORIA(idCategoria),
+  CONSTRAINT FK_MARCA_PRODUTO FOREIGN KEY (idMarca) REFERENCES Marca(idMarca)
+);
+
+-- Criação da sequence para PRODUTO
+CREATE SEQUENCE produto_sequence START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
+-- Criação da sequence para CATEGORIA
+CREATE SEQUENCE categoria_sequence START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
+-- Criação da sequence para Marca
+CREATE SEQUENCE marca_sequence START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
+
+
+-- Criação da trigger para inserir automaticamente o idProduto usando a sequence
+CREATE OR REPLACE TRIGGER tr_insert_id_produto
+BEFORE INSERT ON PRODUTO 
+FOR EACH ROW       
+BEGIN
+    SELECT produto_sequence.NEXTVAL
+    INTO :NEW.idProduto
+    FROM DUAL;
+END;
+/
+
+-- Criação da trigger para inserir automaticamente o idCategoria usando a sequence
+CREATE OR REPLACE TRIGGER tr_insert_id_categoria
+BEFORE INSERT ON CATEGORIA 
+FOR EACH ROW       
+BEGIN
+    SELECT categoria_sequence.NEXTVAL
+    INTO :NEW.idCategoria
+    FROM DUAL;
+END;
+/
+
+-- Criação da trigger para inserir automaticamente o id usando a sequence
+CREATE OR REPLACE TRIGGER tr_insert_id_marca
+BEFORE INSERT ON Marca 
+FOR EACH ROW       
+BEGIN
+    SELECT marca_sequence.NEXTVAL
+    INTO :NEW.idMarca
+    FROM DUAL;
+END;
+/
+
+-- Inserção de dados na tabela CATEGORIA
+INSERT INTO CATEGORIA (nome, descricao) VALUES ('Eletrodomesticos', 'Categoria de eletrodomésticos');
+INSERT INTO CATEGORIA (nome, descricao) VALUES ('Brinquedos', 'Categoria de brinquedos');
+INSERT INTO CATEGORIA (nome, descricao) VALUES ('Textil', 'Categoria Textil');
+INSERT INTO CATEGORIA (nome, descricao) VALUES ('Alimentos', 'Categoria de alimentos');
+INSERT INTO CATEGORIA (nome, descricao) VALUES ('Jogos', 'Categoria de jogos');
+-- Confirmação das operações
+
+INSERT INTO Marca (nome, descricao) VALUES ('Nike', 'Marca de roupas');
+INSERT INTO Marca (nome, descricao) VALUES ('Lego', 'Marca de brinquedos');
+INSERT INTO Marca (nome, descricao) VALUES ('Elma Chips', 'Marca de Alimentos');
+
+COMMIT;
